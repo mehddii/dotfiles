@@ -2,38 +2,41 @@ import app from "ags/gtk4/app"
 import { Astal, Gtk, Gdk } from "ags/gtk4"
 import { execAsync } from "ags/process"
 import { createPoll } from "ags/time"
+import { For, Accessor, createState } from "ags"
+import AstalWorkspace from "gi://AstalWorkspace"
+import AstalBattery from "gi://AstalBattery"
+import { Clock } from "./Clock"
+import { Workspaces } from "./Worspaces"
+import { Tray } from "./Tray"
+
 
 export default function Bar(gdkmonitor: Gdk.Monitor) {
-  const time = createPoll("", 1000, "date")
-  const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
+    const time = createPoll("", 1000, "date")
+    const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
 
-  return (
-    <window
-      visible
-      name="bar"
-      class="Bar"
-      gdkmonitor={gdkmonitor}
-      exclusivity={Astal.Exclusivity.EXCLUSIVE}
-      anchor={TOP | LEFT | RIGHT}
-      application={app}
-    >
-      <centerbox cssName="centerbox">
-        <button
-          $type="start"
-          onClicked={() => execAsync("echo hello").then(console.log)}
-          hexpand
-          halign={Gtk.Align.CENTER}
+    const ws = AstalWorkspace.get_default()
+    const [workspaces, setWorkspaces] = createState(ws.get_workspaces())
+
+    const [battery, setBattery] = createState(AstalBattery.get_default())
+
+
+    return (
+        <window
+            visible
+            name="bar"
+            class="Bar"
+            gdkmonitor={gdkmonitor}
+            exclusivity={Astal.Exclusivity.EXCLUSIVE}
+            anchor={TOP | LEFT | RIGHT}
+            application={app}
         >
-          <label label="Welcome to AGS!" />
-        </button>
-        <box $type="center" />
-        <menubutton $type="end" hexpand halign={Gtk.Align.CENTER}>
-          <label label={time} />
-          <popover>
-            <Gtk.Calendar />
-          </popover>
-        </menubutton>
-      </centerbox>
-    </window>
-  )
+
+
+
+            <box $type="start">
+                <Workspaces />
+            </box>
+
+        </window>
+    )
 }
