@@ -2,19 +2,47 @@
 $fg-color: #{"@theme_fg_color"};
 $bg-color: #{"@theme_bg_color"};
 
+$black: #111111ff;
+$white: rgb(206, 205, 195);
+$grey: #1C1C1C;
+$grey-2: #888888;
+$graphite: #424153ff;
+$indigo-velvet: #513B7Dff;
+$dusty-grape: #5F469Fff;
+$vintage-lavender: #7D6C9Eff;
+$thistle: #D1C4E0ff;
+$metallic-gold: #BEA219ff;
+
 window.Bar {
   background: transparent;
   color: $fg-color;
-  font-weight: bold;
+  margin: 5px 13px;
 
-  > centerbox {
-    background: $bg-color;
-    border-radius: 10px;
-    margin: 8px;
+  >box {
+    >box {
+      background: $black;
+      border-width: 3px;
+      border-style: solid;
+      border-color: $graphite;
+      padding: 1px 14px;
+    }
   }
 
   button {
-    border-radius: 8px;
-    margin: 2px;
+    background: transparent;
+    font-weight: 550;
+    font-size: 0.94em;
+    color: $white;
+    min-width: 17px;
+    margin: 5px 0;
+
+    &.active-btn {
+      background: $grey;
+      border-width: 0 0 2px 0;
+      border-radius: 0px;
+      border-style: solid;
+      border-color: $grey-2;
+
+    }
   }
 }
