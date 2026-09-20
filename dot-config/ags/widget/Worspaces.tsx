@@ -1,7 +1,7 @@
 import GObject from "gnim/gobject";
 import Hyprland from "gi://AstalHyprland"
 import { Gtk } from "ags/gtk4";
-import { For, Accessor, createState } from "ags";
+import { For, Accessor, createBinding } from "ags";
 import { execAsync } from "ags/process";
 
 function Workspace({ id }: { id: number }): GObject.Object {
@@ -15,37 +15,38 @@ function Workspace({ id }: { id: number }): GObject.Object {
     )
 }
 
-export function Workspaces(): GObject.Object {
+// #amount workspaces shown by default, the rest are added and removed dynamically
+export function Workspaces({ amount }: { amount: number }): GObject.Object {
     const hyprland = Hyprland.get_default()
+    const workspaces = createBinding(hyprland, "workspaces")
+        .as(
+            // Merge the active workspaces with the defaults one.
+            // Sort the array
+            (current) => {
+                // Safeguards to limit the default workspaces to 1..10
+                let length = Math.max(Math.min(amount, 10), 1)
+                const workspaces = new Set(
+                    [...Array(length).keys()]
+                        .map(key => key + 1)
+                )
+                // -- NOTE: weird bug when current.sort((a, b) => a.get_id() - b.get_id())
+                current
+                    .map(ws => ws.get_id())
+                    .forEach(id => workspaces.add(id))
 
-    const findPosition = (workspaces: Array<Hyprland.Workspace>, id: number): number => {
-        const result = workspaces.filter((ws) => ws.get_id() < id)
-        return result.length
-    }
+                return Array
+                    .from(workspaces)
+                    .sort((a, b) => a - b)
+            }
+        )
 
-    const [workspaces, setWorkspaces] = createState(hyprland.get_workspaces().sort((a, b) => a.get_id() - b.get_id()))
-    hyprland.connect("workspace-added", (_, workspace: Hyprland.Workspace) => {
-        const current = Array.from(workspaces.peek())
-        const pos = findPosition(current, workspace.get_id())
-
-        current.splice(pos, 0, workspace)
-        setWorkspaces(current)
-    })
-
-    hyprland.connect("workspace-removed", (_, id: number) => {
-        const current = Array.from(workspaces.peek())
-        const pos = findPosition(current, id)
-
-        current.splice(pos, 1)
-        setWorkspaces(current)
-    })
 
     return (
         <box orientation={Gtk.Orientation.HORIZONTAL}>
             <For each={workspaces}>
-                {(item) => {
+                {(id) => {
                     return (
-                        <Workspace id={item.get_id()} />
+                        <Workspace id={id} />
                     )
                 }}
             </For>
